@@ -8,6 +8,6 @@ Automatization of Bitwig Studio 2.0 installation process on Fedora 25.
 
 2. ```cd bitwig-fedora```
 
-3. ```chown +x bitwig-fedora.sh```
+3. ```chmod +x bitwig-fedora.sh```
 
-4. ```sudo ./bitwig-fedora.sh```
+4. ```sudo ./bitwig-fedora.sh -i```
