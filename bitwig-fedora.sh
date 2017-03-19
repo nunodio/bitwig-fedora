@@ -77,7 +77,7 @@ function unpack_bitwig()
 function install_dependencies()
 {
   echo "Installing dependencies. Please Wait..."
-  dnf -y install bzip2-libs dpkg
+  dnf -y install libbsd bzip2-libs dpkg
 }
 
 
@@ -137,6 +137,6 @@ case ${option} in
 esac
 
 echo "Installation Complete. You can execute Bitwig Studio from the Applications menu in gnome"
-echo "(Sound and Video section), or using: ./opt/bitwig-studio/bitwig-studio from terminal."
+echo "(Sound and Video section), or running: bitwig-studio in terminal."
 
 exit 0
