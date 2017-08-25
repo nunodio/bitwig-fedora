@@ -6,21 +6,21 @@
 # USAGE: fedora-bitwig.sh [-i] [-h]
 #
 # DESCRIPTION: This script automates the Bitwig Studio installation process on
-# Fedora 25 distribution.
+# Fedora 26 distribution.
 # The default starting directory is the current directory.
 # Don’t descend directories on other filesystems.
 #
 # OPTIONS: see function ’usage’ below
-# REQUIREMENTS: Fedora 25 Workstation, Bitwig Studio 2.0
+# REQUIREMENTS: Fedora 26 Workstation, Bitwig Studio 2.1.3
 # NOTES: ---
 #===================================================================================
 
 ROOT_UID=0
 E_NOTROOT=87
-DEFAULT_URL="https://downloads.bitwig.com/stable/2.0/bitwig-studio-2.0.deb"
-DEFAULT_FILENAME="bitwig-studio-2.0.deb"
-SHA256="5afdf9cc4bd99ccce5c25e585afc906006e98e87c6b48df0d129f6e4406efcd4"
-OS_VERSION="Fedora release 25 (Twenty Five)"
+DEFAULT_URL="https://downloads.bitwig.com/stable/2.1.3/bitwig-studio-2.1.3.deb"
+DEFAULT_FILENAME="bitwig-studio-2.1.3.deb"
+SHA256="8b6a5abfe0f63aba60a871676e7369e186bc26edb1d510b4ff3c50afdae18e2e"
+OS_VERSION="Fedora release 26 (Twenty Six)"
 
 #=== FUNCTION ================================================================
 # NAME: usage
@@ -48,7 +48,7 @@ function download_bitwig()
     echo "Package $DEFAULT_FILENAME does not exist. Initializing the download..."
     wget $DEFAULT_URL
   fi
-  
+
   echo "Verifying the package checksum. Please wait..."
   if [ "$(sha256sum $DEFAULT_FILENAME | awk {'print $1'})" != "$SHA256" ] ; then
     echo "The checksum doesn't match. Please download the package again."
@@ -115,7 +115,7 @@ fi
 if [ "$UID" -ne "$ROOT_UID" ]; then
   echo "You must be root to run this script."
   exit $E_NOTROOT
-fi 
+fi
 
 if [ $# -eq 0 ] ; then
   usage

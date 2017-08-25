@@ -1,6 +1,7 @@
 # Bitwig Studio on Fedora
-Automatization of Bitwig Studio 2.0 installation process on Fedora 25.
+Automatization of Bitwig Studio 2.1.3 installation process on Fedora 26.
 
+For older versions check the repository tags.
 
 ----
 ## usage
