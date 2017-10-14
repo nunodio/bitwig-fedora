@@ -1,37 +1,41 @@
 #!/bin/bash
-#===================================================================================
+#=============================================================================
 #
 # FILE: fedora-bitwig.sh
 #
-# USAGE: fedora-bitwig.sh [-i] [-h]
+# USAGE: fedora-bitwig.sh [-i|-u] [-h]
 #
 # DESCRIPTION: This script automates the Bitwig Studio installation process on
 # Fedora 26 distribution.
 # The default starting directory is the current directory.
-# Don’t descend directories on other filesystems.
+# Do not descend directories on other filesystems.
 #
-# OPTIONS: see function ’usage’ below
-# REQUIREMENTS: Fedora 26 Workstation, Bitwig Studio 2.1.3
+# OPTIONS: See function - usage - below.
+# REQUIREMENTS: Fedora 26 Workstation, Bitwig Studio 2.2
 # NOTES: ---
-#===================================================================================
+#=============================================================================
 
 ROOT_UID=0
 E_NOTROOT=87
-DEFAULT_URL="https://downloads.bitwig.com/stable/2.1.3/bitwig-studio-2.1.3.deb"
-DEFAULT_FILENAME="bitwig-studio-2.1.3.deb"
-SHA256="8b6a5abfe0f63aba60a871676e7369e186bc26edb1d510b4ff3c50afdae18e2e"
+DEFAULT_URL="https://downloads.bitwig.com/stable/2.2/bitwig-studio-2.2.deb"
+DEFAULT_FILENAME="bitwig-studio-2.2.deb"
+INSTALL_LOG="/opt/bitwig-studio/.$DEFAULT_FILENAME.log"
+SAFE_FILE_REMOVE="^/\./usr/share/*|^/\./opt/bitwig-studio/*"
+SHA256="e43391ff481a939fbdb58faaa768df3a652786fefa7ee7b4ba23245599a3f1b6"
 OS_VERSION="Fedora release 26 (Twenty Six)"
+
 
 #=== FUNCTION ================================================================
 # NAME: usage
 # DESCRIPTION: Display usage information for this script.
 # PARAMETER 1: Install
-#===============================================================================
+#=============================================================================
 function usage()
 {
   printf " usage: $0 <option> \n \n"
   printf " options:\n"
   printf "  -i \t Installs Bitwig Studio\n"
+  printf "  -u \t Uninstall Bitwig Studio\n"
   printf "  -h \t Show this menu \n"
 }
 
@@ -39,19 +43,19 @@ function usage()
 #=== FUNCTION ================================================================
 # NAME: download_bitwig
 # DESCRIPTION: Download the correct version of Bitwig Studio for the installation.
-#===============================================================================
+#=============================================================================
 function download_bitwig()
 {
   if [ -f $DEFAULT_FILENAME ] ; then
     echo "Package $DEFAULT_FILENAME already exists."
   else
-    echo "Package $DEFAULT_FILENAME does not exist. Initializing the download..."
+    echo "Package $DEFAULT_FILENAME does not exist. Initializing the download."
     wget $DEFAULT_URL
   fi
 
-  echo "Verifying the package checksum. Please wait..."
+  echo "Verifying the package checksum. Please wait."
   if [ "$(sha256sum $DEFAULT_FILENAME | awk {'print $1'})" != "$SHA256" ] ; then
-    echo "The checksum doesn't match. Please download the package again."
+    echo "The checksum doesn't match. Please remove or download the package again."
     exit 1
   else
     echo "Package checksum successfully validated."
@@ -62,22 +66,26 @@ function download_bitwig()
 #=== FUNCTION ================================================================
 # NAME: unpack_bitwig
 # DESCRIPTION: Unpack deb package. Copy files to the correct folders.
-#===============================================================================
+#=============================================================================
 function unpack_bitwig()
 {
-  echo "Unpacking $DEFAULT_FILENAME . Please Wait..."
-  dpkg-deb -x $DEFAULT_FILENAME /
+  echo "Unpacking $DEFAULT_FILENAME . Please Wait."
+  tmpfile=$(mktemp)
+  dpkg-deb -xv $DEFAULT_FILENAME / | grep -v '[/]$' >> $tmpfile
+  mv $tmpfile $INSTALL_LOG
+  rm -rf tmpfile
+  chown 400 $INSTALL_LOG
 }
 
 
 #=== FUNCTION ================================================================
 # NAME: install_dependencies
 # DESCRIPTION: Install dependencies for the correct execution of this script.
-#===============================================================================
+#=============================================================================
 function install_dependencies()
 {
-  echo "Installing dependencies. Please Wait..."
-  dnf -y install libbsd bzip2-libs dpkg
+  echo "Installing dependencies. Please Wait."
+  dnf -y install libbsd bzip2-libs dpkg wget
 }
 
 
@@ -85,7 +93,7 @@ function install_dependencies()
 # NAME: create_symbolic_links
 # DESCRIPTION: Create symbolic links for library files, to assure the right
 # fuction of Bitwig Studio.
-#===============================================================================
+#=============================================================================
 function create_symbolic_links()
 {
   echo "Creating symbolic links."
@@ -94,15 +102,73 @@ function create_symbolic_links()
 
 
 #=== FUNCTION ================================================================
+# NAME: check_previous_installation
+# DESCRIPTION: Check if Bitwig Studio is already installed on system.
+#=============================================================================
+function check_previous_installation()
+{
+  if [ -f $INSTALL_LOG ] ; then
+    echo "Your system already has Bitwig Studio installed."
+    read -p "Are you sure you want to continue? <y/N> " prompt
+    if [[ $prompt =~ ^[y]$ ]] ; then
+      return 0
+    fi
+    exit 1
+  fi
+}
+
+
+#=== FUNCTION ================================================================
 # NAME: install
 # DESCRIPTION: Set of fuctions to install Bitwig Studio
-#===============================================================================
+#=============================================================================
 function install()
 {
-  download_bitwig
+  check_previous_installation
   install_dependencies
-  create_symbolic_links
+  download_bitwig
   unpack_bitwig
+  create_symbolic_links
+  echo "Installation Complete."
+  echo "You can execute Bitwig Studio from the Applications menu in gnome"
+  echo "(Sound and Video section), or running: bitwig-studio in terminal."
+}
+
+
+#=== FUNCTION ================================================================
+# NAME: delete_files
+# DESCRIPTION: Uninstall Bitwig Studio
+#=============================================================================
+function delete_files()
+{
+  echo "Deleting Bitwig Studio."
+  while read file; do
+    file_to_delete=/$file
+    # Validation for safety purposes.
+    if [[ -f $file_to_delete && $file_to_delete =~ $SAFE_FILE_REMOVE ]] ; then
+      rm -rf $file_to_delete
+    fi
+  done < $INSTALL_LOG
+  rm -rf /opt/bitwig-studio
+}
+
+
+#=== FUNCTION ================================================================
+# NAME: uninstall
+# DESCRIPTION: Uninstall Bitwig Studio
+#=============================================================================
+function uninstall()
+{
+  if [ -f $INSTALL_LOG ] ; then
+    read -p "Are you sure you want to uninstall Bitwig Studio? <y/N> " prompt
+    if [[ $prompt =~ ^[y]$ ]] ; then
+      delete_files
+      echo "Bitwig Studio has been deleted."
+    fi
+  else
+    echo "Could not open the install log file => $INSTALL_LOG"
+    echo "Are you sure the Bitwig Studio was installed using this script?"
+  fi
 }
 
 
@@ -131,12 +197,12 @@ case ${option} in
     "-i")
         install
         ;;
+    "-u")
+        uninstall
+        ;;
     *)
         usage
         exit 1
 esac
-
-echo "Installation Complete. You can execute Bitwig Studio from the Applications menu in gnome"
-echo "(Sound and Video section), or running: bitwig-studio in terminal."
 
 exit 0
