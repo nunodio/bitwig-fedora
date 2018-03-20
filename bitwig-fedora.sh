@@ -11,17 +11,17 @@
 # Do not descend directories on other filesystems.
 #
 # OPTIONS: See function - usage - below.
-# REQUIREMENTS: Fedora 27 Workstation, Bitwig Studio 2.3.1
+# REQUIREMENTS: Fedora 27 Workstation, Bitwig Studio 2.3.2
 # NOTES: ---
 #=============================================================================
 
 ROOT_UID=0
 E_NOTROOT=87
-DEFAULT_URL="https://downloads.bitwig.com/stable/2.3.1/bitwig-studio-2.3.1.deb"
-DEFAULT_FILENAME="bitwig-studio-2.3.1.deb"
+DEFAULT_URL="https://downloads.bitwig.com/stable/2.3.2/bitwig-studio-2.3.2.deb"
+DEFAULT_FILENAME="bitwig-studio-2.3.2.deb"
 INSTALL_LOG="/opt/bitwig-studio/.$DEFAULT_FILENAME.log"
 SAFE_FILE_REMOVE="^/\./usr/share/*|^/\./opt/bitwig-studio/*"
-SHA256="c231f3bc30476e3da522cc8f157c1318e2440572b322d9220b00f2e74187efa1"
+SHA256="f6ef21adc446f21a539e5aa672c8944c9aaef2d59e63b8df221b526bb1245182"
 OS_VERSION="Fedora release 27 (Twenty Seven)"
 
 
